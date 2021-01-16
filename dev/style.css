@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
+body {
+    background: rgb(19, 19, 19);
+    color: #fff;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+h1 {
+    font-weight: 700;
+}
+
+a {
+    text-decoration: none;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 1hw;
+}
+
+.settings-link {
+    font-size: 2rem;
+    transition: all 150ms;
+}
+.settings-link:active {
+    transform: rotate(15deg);
+}
+
+#settings-modal {
+    color: black;
+}
+.pickr {
+    display: none;
+}
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+.basic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    justify-items: center;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* align-items: center; */
+    /* background: #353535; */
+    background: rgb(230,230,230);
+    background: linear-gradient(180deg, rgba(230,230,230,1) 0%, rgba(180,180,180,1) 100%);  
+    font-size: 3rem;
+    color: rgb(19, 19, 19);
+    box-shadow: rgba(3, 8, 20, 0.1) 0px 0.15rem 0.5rem, rgba(2, 8, 20, 0.1) 0px 0.075rem 0.175rem;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    transition: all 150ms;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+ }
+  
+.card:hover {
+    box-shadow: rgba(2, 8, 20, 0.1) 0px 0.35em 1.175em, rgba(2, 8, 20, 0.08) 0px 0.175em 0.5em;
+    transform: translateY(-1px) scale(1.025);
+ }
+
+ .top,.bot {
+     padding-left: 10px;
+ }
+ .top {
+     padding-top: 5px;
+     padding-bottom: 5px;
+ }
+ .bot {
+     font-size: 1.75rem;
+     padding-bottom: 10px;
+ }
