@@ -1,8 +1,6 @@
 $(function() {
     $(".card").bind('click', function(){
-        MicroModal.init();
         let selector = $(this).children(".bot").text().toLowerCase()
-        alert( selector );
         var xhr = new XMLHttpRequest();
         xhr.open("GET", "/mode?pattern=" + selector , true); 
         xhr.send();
