@@ -2,6 +2,8 @@
 #	 pip install requests
 
 # From https://github.com/Gheotic/ESP-HTML-Compressor
+# Modified to use c++ string literals instead.
+# 01/16/2021
 import requests
 import os
 
@@ -20,8 +22,8 @@ def write_to_file(file, data, dir=""):
     dir = dir.replace(input_dir,"")                         # Remove the first directory(input_dir)
     dir = dir.replace("\\","/")                             # Chang to /
     f_output.write("// " + dir + "\n")                      # Print comment
-    f_output.write("const char* data_" + filename + "_" + file_extension + "_path PROGMEM = \""+str(dir)+"\";\n")    # print path
-    f_output.write("const char data_"+filename+"_"+file_extension+"[] PROGMEM = {"+data.upper()+"};\n\n")            # print binary data
+    f_output.write("static const char* data_" + filename + "_" + file_extension + "_path PROGMEM = \""+str(dir)+"\";\n")                   # print path
+    f_output.write("static const char data_"+filename+"_"+file_extension+"[] PROGMEM = R\"rawliteral("+ data +")rawliteral\";\n\n")       # print binary data
 
     # f_output.write("#define data_" + filename + "_len " + str(data.count('0x')) +"\n")
 
@@ -61,20 +63,20 @@ for root, dirs, files in os.walk(input_dir, topdown=False):
         if name.endswith(".js"):
             print(os.path.join(root, name))
             minified = minify_js(os.path.join(root, name))          # minify javascript
-            hexified = aschii2Hex(minified)                         # convert to hex
-            write_to_file(name, hexified, os.path.join(root, name)) # write to file
+            #hexified = aschii2Hex(minified)                         # convert to hex
+            write_to_file(name, minified, os.path.join(root, name)) # write to file
 
         elif name.endswith(".html"):
             print(os.path.join(root, name))
             minified = minify_html(os.path.join(root, name))        # minify html
-            hexified = aschii2Hex(minified)                         # convert to hex
-            write_to_file(name, hexified, os.path.join(root, name)) # write to file
+            #hexified = aschii2Hex(minified)                         # convert to hex
+            write_to_file(name, minified, os.path.join(root, name)) # write to file
 
         elif name.endswith(".css"):
             print(os.path.join(root, name))
             minified = minify_css(os.path.join(root, name))         # minify css
-            hexified = aschii2Hex(minified)                         # convet to hex
-            write_to_file(name, hexified, os.path.join(root, name)) # write to file
+            #hexified = aschii2Hex(minified)                         # convet to hex
+            write_to_file(name, minified, os.path.join(root, name)) # write to file
 
 
 f_output.close()
