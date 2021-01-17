@@ -3,37 +3,18 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <WifiManager.h>    //branch asyncwebserver
-#include <web_page.h>
+
+#include <LittleFS.h>
+#include <full_site.h>
 
 #define DEBUG TRUE
 
 WiFiManager wm;
 AsyncWebServer server(80);
 
-bool state = false;
-const char* PARAM_INPUT_1 = "state";
+const char* PARAM_INPUT_1 = "pattern";
+String current_pattern = "off";
 
-String outputState(){
-  if(state){
-    return "checked";
-  }
-  else {
-    return "";
-  }
-  return "";
-}
-
-// Replaces placeholder with button section in web page
-String processor(const String& var){
-  //Serial.println(var);
-  if(var == "BUTTONPLACEHOLDER"){
-    String buttons ="";
-    String outputStateValue = outputState();
-    buttons+= "<h4>Output - GPIO 2 - State <span id=\"outputState\"></span></h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"output\" " + outputStateValue + "><span class=\"slider\"></span></label>";
-    return buttons;
-  }
-  return String();
-}
 
 void setup() {
   
@@ -43,27 +24,55 @@ void setup() {
     // WiFi.disconnect(true);
   #endif
 
+/* -------------------------------------------------------------------------- */
+/*                              Init WifiManager                              */
+/* -------------------------------------------------------------------------- */
+
   wm.disconnect();
   wm.setAPStaticIPConfig(IPAddress(192,168,0,1), IPAddress(192,168,0,1), IPAddress(255,255,255,0));
   wm.setMinimumSignalQuality(15);
-  wm.setClass("invert");
-  wm.autoConnect("MATRIX");  //setting broadcast ssid and password when saved fallback creds fail.
-  //WifiManager halts here until a network is connected succesfully [consider wifiManager.setConfigPortalTimeout(180);]
+  wm.setClass("invert");      //sets wm to dark mode
+  wm.autoConnect("MATRIX");   //setting broadcast ssid and password when saved fallback creds fail.
+  
+  // WifiManager halts here until a network is connected succesfully
+  // consider wifiManager.setConfigPortalTimeout(180);
 
+
+/* -------------------------------------------------------------------------- */
+/*                                   Routes                                   */
+/* -------------------------------------------------------------------------- */
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", index_html, processor);
+    request->send_P(200, "text/html", data_index_html);
+    #ifdef DEBUG
+      Serial.println("GET: /");
+    #endif
+  });
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/css", data_style_css);
+    #ifdef DEBUG
+      Serial.print("GET: ");
+      Serial.println(data_style_css_path);
+    #endif
+  });
+  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/javascript", data_script_js);
+    #ifdef DEBUG
+      Serial.print("GET: ");
+      Serial.println(data_script_js_path);
+    #endif
   });
 
-  server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
+/* ----------------------------------- API ---------------------------------- */
+
+  server.on("/mode", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage;
     String inputParam;
     // GET input1 value on <ESP_IP>/update?state=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1)) {
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
-      digitalWrite(LED_BUILTIN, inputMessage.toInt());
-      state = !state;
+      current_pattern = inputMessage;
     }
     else {
       inputMessage = "No message sent";
@@ -74,16 +83,17 @@ void setup() {
   });
 
   server.on("/state", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", String(state).c_str());
+    request->send(200, "text/plain", String(current_pattern).c_str());
   });
 
-  // Start server
+/* -------------------------------------------------------------------------- */
+/*                       Start server, continue to loop                       */
+/* -------------------------------------------------------------------------- */
+
   server.begin();
-  state = false;
-  digitalWrite(LED_BUILTIN, state);
 }
 
 
 void loop() {
-  digitalWrite(LED_BUILTIN, !state);
+
 }
