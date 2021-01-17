@@ -3,6 +3,7 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <WifiManager.h>    //branch asyncwebserver
+#include <NeoPixelBrightnessBus.h>
 
 #include <LittleFS.h>
 #include <full_site.h>
@@ -15,6 +16,13 @@ AsyncWebServer server(80);
 const char* PARAM_INPUT_1 = "pattern";
 String current_pattern = "off";
 
+const uint8_t MatrixWidth  = 16;
+const uint8_t MatrixHeight = 16;
+const uint16_t PixelCount = MatrixWidth * MatrixHeight;
+
+NeoTopology<RowMajorAlternatingLayout> topo(MatrixWidth, MatrixHeight);
+NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+void changeMode();
 
 void setup() {
   
@@ -48,14 +56,14 @@ void setup() {
       Serial.println("GET: /");
     #endif
   });
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on(data_style_css_path, HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/css", data_style_css);
     #ifdef DEBUG
       Serial.print("GET: ");
       Serial.println(data_style_css_path);
     #endif
   });
-  server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on(data_script_js_path, HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/javascript", data_script_js);
     #ifdef DEBUG
       Serial.print("GET: ");
@@ -73,6 +81,7 @@ void setup() {
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
       current_pattern = inputMessage;
+      changeMode();
     }
     else {
       inputMessage = "No message sent";
@@ -86,13 +95,58 @@ void setup() {
     request->send(200, "text/plain", String(current_pattern).c_str());
   });
 
-/* -------------------------------------------------------------------------- */
-/*                       Start server, continue to loop                       */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------ Start server ------------------------------ */
 
   server.begin();
+
+/* -------------------------------------------------------------------------- */
+/*                                  LED Setup                                 */
+/* -------------------------------------------------------------------------- */
+  strip.Begin();
+  strip.SetBrightness(40);
+  strip.ClearTo(0);
+  strip.Show();
 }
 
+// Hashing function so that we can use a switch statement on the strings
+constexpr unsigned int hash(const char *s, int off = 0) {                        
+    return !s[off] ? 5381 : (hash(s, off+1)*33) ^ s[off];                           
+}       
+
+/* -------------------------------------------------------------------------- */
+/*                                 Animations                                 */
+/* -------------------------------------------------------------------------- */
+void changeMode() {
+  switch ( hash( current_pattern.c_str() ) ) {
+
+/* ----------------------------------- Off ---------------------------------- */
+  case hash("off"):
+    strip.ClearTo(0);
+    strip.Show();
+    break;
+
+/* -------------------------------------------------------------------------- */
+/*                               Static Rainbow                               */
+/* -------------------------------------------------------------------------- */
+  case hash("rainbow"):
+    const float c_IncrH = 1.0f / PixelCount;
+    float h = 0.0f;
+
+    for(int i=0; i<MatrixWidth; i++) {
+      for(int j=0; j<MatrixHeight; j++) {
+        strip.SetPixelColor(topo.Map(i, j), HslColor(h, 1.0f, 0.5f));
+        h += c_IncrH;
+      }
+    }
+    strip.Show();
+    break;
+
+/* --------------------------------- Sparkle -------------------------------- */
+  case hash("sparkle"):
+    //sparkle animation...
+    break;
+  }
+}
 
 void loop() {
 
