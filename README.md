@@ -10,7 +10,7 @@ Heres a list of the currently implemented features.:
 * Use [WifiManager](https://github.com/tzapu/WiFiManager/tree/feature_asyncwebserver) to handle Wifi Connection and credentials
 * Serve static site (html, css, js) through [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 * Handle `GET` requests to change the contents of the display in realtime
-* Implement basic patterns through [NeoPixelBus](https://github.com/Makuna/NeoPixelBus)
+* Implement basic patterns through [FastLED](https://github.com/FastLED/FastLED)
 
 ## Serving the website
 The website that serves as the sole interface for this device is located in [/dev/](https://github.com/jamesmendel/16x16-Wall-Matrix/tree/master/dev). It is compiled into a header file (`full_site.h`) found in the `src` directory through the script `Convert.py`, which was modified from [ESP-HTML-Compressor](https://github.com/Gheotic/ESP-HTML-Compressor).
